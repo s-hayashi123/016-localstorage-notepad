@@ -1,23 +1,29 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import "./App.css";
+import useLocalStorage from "./hooks/useLocalStorage";
 import { useEffect, useState } from "react";
 
 function App() {
-  const [memo, setMemo] = useState("");
+  const [memo, setMemo] = useLocalStorage<string>("my-memo", "");
+  const [isSaved, setIsSaved] = useState(false);
 
   const handleMemoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemo(e.target.value);
   };
 
   useEffect(() => {
-    const savedMemo = localStorage.getItem("my-memo");
-    if (savedMemo) setMemo(savedMemo);
-  }, []);
+    // 初期表示時（memoが空文字列）は通知を表示しない
+    if (memo !== "") {
+      setIsSaved(true);
+      const timer = setTimeout(() => {
+        setIsSaved(false);
+      }, 2000);
 
-  useEffect(() => {
-    localStorage.setItem("my-memo", memo);
+      return () => clearTimeout(timer);
+    }
   }, [memo]);
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-2xl">
@@ -35,6 +41,7 @@ function App() {
             onChange={handleMemoChange}
           />
           {/* ヒント: placeholderプロパティで「ここにメモを入力...」と表示してみましょう */}
+          {isSaved && <p>保存しました。</p>}
         </div>
       </div>
     </div>
